@@ -16,6 +16,7 @@ Library    RPA.Email.ImapSmtp
 
 *** Variables ***
 ${User_name}
+# User for Tracking Barcode PDF's Document Creation
 ${Pdf_number}      1
 
 
@@ -87,8 +88,8 @@ Login To SAP Application PP5
     Set Global Variable    ${User_name}
     Input Text      ${LOC_USERNAME}      ${User_name}
     Input Password    ${LOC_PASSWORD}     ${User_Password}
-    # Input Text        ${LOC_LANGUAGE}    ${primary_config['Language']}
-    # Input Text        ${LOC_CLIENT}      ${primary_config['Client']}
+    Input Text        ${LOC_LANGUAGE}    ${primary_config['Language']}
+    Input Text        ${LOC_CLIENT}      ${primary_config['Client']}
     Send Vkey      0
     Log To Console With Timestamp    SAP login completed PP5
 
@@ -270,14 +271,12 @@ Process HTML File
     FOR    ${vendor}    IN    @{vendor_outer}
         Log To Console With Timestamp     HEre Vendor Data is This :- ${vendor}
         Log To Console With Timestamp     ------------------------------
-        # FOR    ${barcode}    IN    @{vendor['barcodes']}
-        # HArcoded Avaivalble BArcodes for SMoothly Run you can Remove this one and Uncomment line 274 for actual Dynamic flow.
-        FOR    ${barcode}    IN    5100537160    5100537170     5100537159
+        FOR    ${barcode}    IN    @{vendor['barcodes']}
             Log To Console With Timestamp     Processing Barcode :- ${barcode} in Vendor Name:- ${vendor['beneficiary_name']}
             Log    Processing barcode ${barcode}
             ${pdf_generate}=    Process for Barcode    ${barcode}    ${KZ_FOLDER_PATH}
 
-            ${pdf_file}=    Set Variable    ${KZ_FOLDER_PATH}\\${barcode}.pdf
+            ${pdf_file}=    Set Variable    ${KZ_FOLDER_PATH}\\${barcode}_${Pdf_number}.pdf
             ${status}=      Set Variable    Success
 
             # Added record of KZ to db 
@@ -481,10 +480,8 @@ Execute Barcode Upload Via Offset Search
 
     Log To Console With Timestamp     After clicking IMg Barcode copy from file 
     Wait Until Keyword Succeeds    20s     2s    Element Should Be Present     wnd[2]/usr/ctxtDY_PATH
-    # Input Text    wnd[2]/usr/ctxtDY_PATH    ${barcode_file_path}
-    Input Text    wnd[2]/usr/ctxtDY_PATH    C:\\Users\\PallGau\\Downloads\\rpa0032_2_1\\RPA0032_2\\
+    Input Text    wnd[2]/usr/ctxtDY_PATH    ${barcode_file_path}
     Input Text     wnd[2]/usr/ctxtDY_FILENAME    BarcodeList.txt
-    # Input Text     wnd[2]/usr/ctxtDY_FILENAME    BarcodeList.txt
     Click Element     wnd[2]/tbar[0]/btn[0]
     Wait Until Keyword Succeeds    20s    2s    Element should Be Present    wnd[1]/tbar[0]/btn[8]
     # Log To Console With Timestamp       Here after f8 before invoice

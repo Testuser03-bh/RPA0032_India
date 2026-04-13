@@ -14,9 +14,6 @@ Resource          Purchase_Order_PP5.robot
 *** Variables ***
 ${User_name}
 
-
-
-
 *** Keywords ***
 Workflow RPA0032 HP1
     [Arguments]    ${DOWNLOADED_HTML_FILES}
@@ -129,7 +126,7 @@ Perform HTML Extraction HP1
     END
     Wait Until Keyword Succeeds    20s     2s     Element should Be Present     ${Selecting_row}
     Set Focus     ${Selecting_row}
-        # Log To Console With Timestamp      Clicked on Seelectin row
+        Log To Console With Timestamp      Clicked on Selecting row
     Wait Until Keyword Succeeds    20s     2s     Element should Be Present    wnd[1]/tbar[0]/btn[0]
     Set Focus     wnd[1]/tbar[0]/btn[0]
     Click Element   wnd[1]/tbar[0]/btn[0]

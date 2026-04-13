@@ -7,7 +7,6 @@ Library          ..${/}adapters${/}Python_helper.py
 Library          ..${/}adapters${/}db_adapter.py
 Library            ..${/}adapters${/}Library${/}InitAllSettingsSQL.py
 Resource     ..${/}Resources${/}locators.robot
-Library        DateTime
 
 
 
