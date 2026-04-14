@@ -31,7 +31,7 @@ SAP Flow Identification Process
 
     # # # # Processing and downloading HP1
     Workflow RPA0032 HP1    ${DOWNLOADED_HTML_FILES}
-    # # # Processing Full flow in PP5
+    # # Processing Full flow in PP5
     Main Workflow RPA0032 PP5    ${DOWNLOADED_HTML_FILES}
 
     Close SAP
