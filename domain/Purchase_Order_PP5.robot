@@ -187,18 +187,20 @@ Perform HTML Extraction
     Wait Until Keyword Succeeds    20s     2s     Element should Be Present    wnd[1]/tbar[0]/btn[0]
     Set Focus     wnd[1]/tbar[0]/btn[0]
     Click Element   wnd[1]/tbar[0]/btn[0]
-    RPA.Desktop.Press Keys     alt    e
-    RPA.Desktop.Press Keys     y
-    ${Payment_list_disabled_status}=    Run Keyword And Return Status     Wait For Element     ${Payment_list_Disabled}    10   2
-    Log To Console With Timestamp     ${Payment_list_disabled_status}:- here disabled image found
-    IF  ${Payment_list_disabled_status}
+
+    ${status}=     Check Payment List Status
+    Log To Console With Timestamp     ${status}
+    IF  not ${status}
         Log To Console With Timestamp    Payment List Disabled in This Identification PP5 :- ${Identification}
         RETURN    None
     END
     RPA.Desktop.Press Keys     alt    e
     RPA.Desktop.Press Keys     y
-    RPA.Desktop.Press Keys    i
-    Wait Until Keyword Succeeds    20s     5s     Element should Be Present     wnd[1]/tbar[0]/btn[0]
+    RPA.Desktop.Press Keys     i
+    ${key_not_pressed}=    Run Keyword And Return Status     Wait Until Keyword Succeeds    20s     5s     Element should Be Present     wnd[1]/tbar[0]/btn[0]
+    IF  not ${key_not_pressed}
+        RPA.Desktop.Press Keys     i
+    END
     Set Focus     wnd[1]/tbar[0]/btn[0]
     Click Element   wnd[1]/tbar[0]/btn[0]
     ${PATH_TO_SAVE_KZ_FOLDER}=    Set Variable     ${primary_config['PathToSaveKZFolder']}
@@ -268,10 +270,11 @@ Process HTML File
     ${pdf_generate}=     Set Variable     False
     @{Payment_settlement_Record}=    Create List
     ${vendor_outer}=    Get From Dictionary    ${data}    vendors    
-    FOR    ${vendor}    IN    @{vendor_outer}
+    FOR    ${vendor}    IN    @{vendor_outer} 
         Log To Console With Timestamp     HEre Vendor Data is This :- ${vendor}
         Log To Console With Timestamp     ------------------------------
-        FOR    ${barcode}    IN    @{vendor['barcodes']}
+        # FOR    ${barcode}    IN    @{vendor['barcodes']}
+        FOR    ${barcode}    IN    5100537160    5100537170     5100537159
             Log To Console With Timestamp     Processing Barcode :- ${barcode} in Vendor Name:- ${vendor['beneficiary_name']}
             Log    Processing barcode ${barcode}
             ${pdf_generate}=    Process for Barcode    ${barcode}    ${KZ_FOLDER_PATH}
@@ -335,7 +338,7 @@ Process for Barcode
     Wait for Element    ${IMG_SETFILTER}    10
     RPA.Desktop.Click     ${IMG_SETFILTER}
     Log To Console With Timestamp       Pressed Set filter in F1
-    ${data_not_found}=    Run keyword And Return Status    Wait For Element     wnd[1]/usr/txtMESSTXT1      timeout=5
+    ${data_not_found}=    Run keyword And Return Status    Wait Until Keyword Succeeds    20s     2s    Element Should be Present   wnd[1]/usr/txtMESSTXT1
     Log To Console With Timestamp     ${data_not_found}
     IF  ${data_not_found}
         ${data_not_found}=    Get Value     wnd[1]/usr/txtMESSTXT1
@@ -378,12 +381,16 @@ Process for Barcode
 PDF Export Approach
     [Arguments]    ${KZ_FOLDER}    ${BARCODE}
 
-    RPA.Desktop.Click    ${Count_helper}
-    RPA.Desktop.Press Keys    tab
+    Wait for Element    ${IMG_ORIGINAL}    20
+    RPA.Desktop.Click    ${IMG_ORIGINAL}
+
+    FOR     ${i}   IN RANGE    3
+        RPA.Desktop.Press Keys    shift    tab
+        Sleep     0.5s
+    END
     RPA.Desktop.Press Keys    enter
-    Sleep    5s
     # Close Edge if it appears
-    Run Keyword And Return Status    Wait For Element    ${Downloaded_file}      10
+    Run Keyword And Return Status    Wait For Element    ${Downloaded_file}      20
     Log To Console With Timestamp       Downlaod image detected 
     Close Edge PDF Windows
     # Wait until SAP creates a folder in tmp
@@ -480,7 +487,8 @@ Execute Barcode Upload Via Offset Search
 
     Log To Console With Timestamp     After clicking IMg Barcode copy from file 
     Wait Until Keyword Succeeds    20s     2s    Element Should Be Present     wnd[2]/usr/ctxtDY_PATH
-    Input Text    wnd[2]/usr/ctxtDY_PATH    ${barcode_file_path}
+    Input Text    wnd[2]/usr/ctxtDY_PATH      ${EXECDIR}
+    # Input Text    wnd[2]/usr/ctxtDY_PATH    ${barcode_file_path}
     Input Text     wnd[2]/usr/ctxtDY_FILENAME    BarcodeList.txt
     Click Element     wnd[2]/tbar[0]/btn[0]
     Wait Until Keyword Succeeds    20s    2s    Element should Be Present    wnd[1]/tbar[0]/btn[8]
@@ -558,3 +566,13 @@ Send Email Final Report
    ...    attachments=${log_path}
  
     Log To Console With Timestamp     📧 Report successfully sent with attached log!
+
+
+
+Check Payment List Status
+    ${status}=    Set Variable    NOT_FOUND
+
+    ${status}=    Run Keyword And Return Status
+    ...    Element Should Be Present    ${payment_list_locator}
+
+    RETURN    ${status}

@@ -131,27 +131,31 @@ Perform HTML Extraction HP1
     Set Focus     wnd[1]/tbar[0]/btn[0]
     Click Element   wnd[1]/tbar[0]/btn[0]
     # Checking Payment List is Activating
-    RPA.Desktop.Press Keys     alt    e
-    RPA.Desktop.Press Keys     y
-    Sleep   2s
-    ${Payment_list_disabled_status}=    Run Keyword And Return Status     Wait For Element     ${Payment_list_Disabled}    timeout=10
-    Log To Console With Timestamp    ${Payment_list_disabled_status} here disabled image found
-    IF  ${Payment_list_disabled_status}
-        Log To Console With Timestamp     Payment List Disabled in This Identification PP5 :- ${Identification}
+    ${status}=     Check Payment List Status
+    Log To Console With Timestamp     ${status}
+    IF  not ${status}
+        Log To Console With Timestamp    Payment List Disabled in This Identification PP5 :- ${Identification}
         RETURN    None
     END
     RPA.Desktop.Press Keys     alt    e
     RPA.Desktop.Press Keys     y
-    RPA.Desktop.Press Keys    i
-    Wait Until Keyword Succeeds    20s     2s     Element should Be Present     wnd[1]/tbar[0]/btn[0]
+    RPA.Desktop.Press Keys     i
+    ${key_not_pressed}=    Run Keyword And Return Status     Wait Until Keyword Succeeds    20s     5s     Element should Be Present     wnd[1]/tbar[0]/btn[0]
+    IF  not ${key_not_pressed}
+        RPA.Desktop.Press Keys     i
+    END
     Set Focus     wnd[1]/tbar[0]/btn[0]
     Click Element   wnd[1]/tbar[0]/btn[0]
-    ${Auth_error_Status}=    Run Keyword And Return Status     Wait For Element      wnd[1]/usr/txtMESSTXT1    10
+    Sleep      2s
+    # ${Auth_error_Status}=     Run Keyword And Return Status     Wait For Element      wnd[1]/usr/txtMESSTXT1      10
+    ${Auth_error_Status}=     Run Keyword And Return Status     Wait For Element      ${Information_image}      10
+    Log To Console With Timestamp  message=${Auth_error_Status}
     IF  ${Auth_error_Status}
         Log To Console With Timestamp     Authentication Error in This Identification :- ${Identification}
         Set Focus     wnd[1]/tbar[0]/btn[0]
         Click Element   wnd[1]/tbar[0]/btn[0]
-        ${Auth_error_Status}=    Run Keyword And Return Status   Wait For Element      wnd[1]/usr/txtMESSTXT1    10
+        # ${Auth_error_Status}=    Run Keyword And Return Status   Wait For Element      wnd[1]/usr/txtMESSTXT1    10
+        ${Auth_error_Status}=     Run Keyword And Return Status     Wait For Element      ${Information_image}      10
         IF  ${Auth_error_Status}
             Log To Console With Timestamp     Authentication Error in This Identification :- ${Identification}
             Set Focus     wnd[1]/tbar[0]/btn[0]
@@ -160,7 +164,6 @@ Perform HTML Extraction HP1
         END
         RETURN    None
     END
-    
 
     ${PATH_TO_SAVE_KZ_FOLDER}=    Set Variable     ${primary_config['PathToSaveKZFolder']}
     Wait For Element    ${Payment_list_found}     10
@@ -183,9 +186,11 @@ Perform HTML Extraction HP1
     Wait Until Keyword Succeeds    20s    2s     Element Should Be Present    wnd[1]/tbar[0]/btn[11]
     Set Focus     wnd[1]/tbar[0]/btn[11]
     Click Element   wnd[1]/tbar[0]/btn[11]
-    Wait For Element    ${Not_downlaod}    5
-    Set Focus     wnd[1]/tbar[0]/btn[0]
-    Click Element   wnd[1]/tbar[0]/btn[0]
+    ${not_download_page}=   Run Keyword And Return Status    Wait For Element    ${Not_downlaod}    5
+    IF    ${not_download_page}
+        Wait For Element     wnd[1]/tbar[0]/btn[0]      timeout=5
+        Click Element   wnd[1]/tbar[0]/btn[0]
+    END
     # Ensuruing File Is downlaoded
     Wait For Element     ${Downloaded_file}      10
     Send Vkey    3

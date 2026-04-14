@@ -50,6 +50,7 @@ ${SAP_TMP}
 ${Clear_filter}     image:${CURDIR}${/}..${/}${/}data${/}images${/}Clear_filter.png
 ${Delete_filter}     image:${CURDIR}${/}..${/}${/}data${/}images${/}Delete_filter.png
 ${Not_F1_Doc}  image:${CURDIR}${/}..${/}${/}data${/}images${/}Not_F1_doc.png
+${Information_image}  image:${CURDIR}${/}..${/}${/}data${/}images${/}Information.png
 @{BARCODE_RECORDS}
 
 # Locator of Upload BArcode.robot
@@ -62,11 +63,12 @@ ${IMG_LAYOUT}     image:${CURDIR}${/}..${/}data${/}images${/}layout.png
 ${Multiple_Selection_Image}  image:${CURDIR}${/}..${/}data${/}images${/}Invoice_multiple_selection.png
 ${Multiple_Selection_Image_safe}  image:${CURDIR}${/}..${/}data${/}images${/}Invoice_multiple_selection_safe.png
 ${Perform_Search_Image}  image:${CURDIR}${/}..${/}data${/}images${/}Perform_search.png
+${IMG_ORIGINAL}  image:${CURDIR}${/}..${/}data${/}images${/}original.png
 ${Hit_filter_Image}     image:${CURDIR}${/}..${/}data${/}images${/}Hit_filter_check.png
 ${default_setting_click}    image:${CURDIR}${/}..${/}data${/}images${/}default_setting_select.png
 ${LOC_Choose_LAYOUT_SHELL}  image:${CURDIR}${/}..${/}data${/}images${/}Choose_layout.png
 ${Layout_User_Active}    image:${CURDIR}${/}..${/}data${/}images${/}Layout_User_Active.png
-
+${payment_list_locator}     wnd[0]/mbar/menu[1]/menu[2]/menu[3]
 # Barcode Upload
 ${LOC_PATH_INPUT}  wnd[2]/usr/ctxtDY_PATH
 ${LOC_FILE_INPUT}  wnd[2]/usr/ctxtDY_FILENAME

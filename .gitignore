@@ -1,5 +1,6 @@
 .venv
 .env
 log.html
+__pycache__/
 output.xml
 report.html
