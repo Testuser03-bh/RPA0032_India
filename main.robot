@@ -6,6 +6,6 @@ Library           adapters/Library/RobotProcessLibrary.py
 
 *** Test Cases ***
 Sap autoamtion all type 
-    # Initialize Robot Process
+    Initialize Robot Process
     SAP Flow Identification Process
-    # End Robot Process
+    End Robot Process

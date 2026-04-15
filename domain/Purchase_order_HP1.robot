@@ -8,8 +8,7 @@ Library           String
 Library           Collections
 Library           DateTime
 Resource          Purchase_Order_PP5.robot
-
-    
+Library           ../adapters/Library/RobotProcessLibrary.py   
 
 *** Variables ***
 ${User_name}
@@ -25,12 +24,9 @@ Workflow RPA0032 HP1
     RETURN    ${DOWNLOADED_HTML_FILES}
 
 Close Existing SAP
-
     Run Process    taskkill    /F    /T    /IM    saplogon.exe    shell=True
     Run Process    taskkill    /F    /T    /IM    sapgui.exe    shell=True
     Run Process    cmd.exe    /c    rd /S /Q "%temp%\\gen_py"    shell=True
-
-
 Initialize SAP System HP1
     [Documentation]    Kills existing SAP processes and launches SAP Logon
 
@@ -80,23 +76,44 @@ Download All HTML Files HP1
     @{IDENTIFICATIONS}=    Split String    ${IDENT_STRING}    |
     FOR    ${identification}    IN    @{IDENTIFICATIONS}
         Log To Console With Timestamp    ${identification}
-        ${HTML_FILE}=    Perform HTML Extraction HP1   ${today_date}    ${identification}
-        
-        ${exists}=    Run Keyword And Return Status
-        ...    File Should Exist    ${HTML_FILE}
 
-        IF    ${exists}
-            Append To List    ${FILES}    ${HTML_FILE}
-            Log To Console With Timestamp    Downloaded ${HTML_FILE}
+        ${status}    ${err_msg}=    Run Keyword And Ignore Error
+        ...    Perform HTML Extraction HP1    ${today_date}    ${identification}
+
+        IF    '${status}' == 'PASS'
+            # Perform HTML Extraction returned a value — check if file actually exists
+            ${HTML_FILE}=    Set Variable    ${err_msg}
+            # err_msg holds the return value when PASS
+
+            IF    '${HTML_FILE}' == 'None' or '${HTML_FILE}' == '${EMPTY}'
+                # ⚠️ Business exception — no data, payment list disabled, auth error
+                Log To Console With Timestamp    No data for ${identification}
+                Increment Technically Checked
+                Increment Log Transactions
+            ELSE
+                ${file_exists}=    Run Keyword And Return Status
+                ...    File Should Exist    ${HTML_FILE}
+                IF    ${file_exists}
+                    # Success — file downloaded
+                    Append To List    ${FILES}    ${HTML_FILE}
+                    Log To Console With Timestamp    Downloaded ${HTML_FILE}
+                    Increment Done And Technically Checked
+                    Increment Log Transactions
+                ELSE
+                    # Business exception — extraction ran but file missing
+                    Log To Console With Timestamp    File not found after extraction: ${HTML_FILE}
+                    Increment Technically Checked
+                    Increment Log Transactions
+                END
+            END
         ELSE
-            Log To Console With Timestamp    No data for ${identification}
+            # System exception — SAP crash, element not found etc
+            Log To Console With Timestamp    System exception for ${identification}: ${err_msg}
+            # No counter increment
         END
-        Log To Console With Timestamp     HEre for loop empty currently
 
+        Log To Console With Timestamp    Here for loop completed for ${identification}
     END
-
- 
-
 Perform HTML Extraction HP1
     [Arguments]     ${run_date}     ${Identification}
     Log To Console With Timestamp      Here in Perform HTML Search
@@ -194,3 +211,22 @@ Perform HTML Extraction HP1
     Send Vkey    3
     RETURN    ${file_path}
 
+Increment Log Transactions
+    ${lib}=    Get Library Instance    RobotProcessLibrary
+    ${new_tx}=    Evaluate    int($lib.config.Log_Transactions) + 1
+    Evaluate    setattr($lib.config, 'Log_Transactions', str(${new_tx}))
+    Log To Console    Log_Transactions: ${new_tx}
+
+Increment Done And Technically Checked
+    ${lib}=    Get Library Instance    RobotProcessLibrary
+    ${new_done}=    Evaluate    int($lib.config.Log_Done) + 1
+    ${new_loop}=    Evaluate    int($lib.config.Log_Looping) + 1
+    Evaluate    setattr($lib.config, 'Log_Done', str(${new_done}))
+    Evaluate    setattr($lib.config, 'Log_Looping', str(${new_loop}))
+    Log To Console    Completed: ${new_done} | TechnicallyChecked: ${new_loop}
+
+Increment Technically Checked
+    ${lib}=    Get Library Instance    RobotProcessLibrary
+    ${new_loop}=    Evaluate    int($lib.config.Log_Looping) + 1
+    Evaluate    setattr($lib.config, 'Log_Looping', str(${new_loop}))
+    Log To Console    TechnicallyChecked (business exception): ${new_loop}

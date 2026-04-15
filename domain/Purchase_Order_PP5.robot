@@ -16,9 +16,7 @@ Library    RPA.Email.ImapSmtp
 
 *** Variables ***
 ${User_name}
-# User for Tracking Barcode PDF's Document Creation
 ${Pdf_number}      1
-
 
 *** Keywords ***
 Main Workflow RPA0032 PP5
@@ -32,22 +30,31 @@ Main Workflow RPA0032 PP5
         Log To Console With Timestamp     PP5- Total Files:- ${file}
     END
     FOR    ${HTML_FILE}    IN    @{DOWNLOADED_HTML_FILES}
-        ${log_path}    ${barcode_report}=    Process HTML File    ${HTML_FILE}
+        ${proc_status}    ${proc_err}=    Run Keyword And Ignore Error
+        ...    Process HTML File    ${HTML_FILE}
+        IF    '${proc_status}' == 'PASS'
+            # Process HTML File returns two values — capture them separately
+            ${log_path}    ${barcode_report}=    Process HTML File    ${HTML_FILE}
+            PP5 Increment Done And Technically Checked
+            PP5 Increment Log Transactions
+        ELSE
+            Log To Console With Timestamp    System exception processing ${HTML_FILE}: ${proc_err}
+            PP5 Increment Technically Checked
+            PP5 Increment Log Transactions
+            CONTINUE
+        END
+
         ${date}=    Evaluate    __import__('datetime').datetime.now().strftime('%Y_%m_%d')
         IF    '${barcode_report}' != 'None'
             log to console     Here in if condition
             ${barcode_filename}=    Evaluate    os.path.basename(r'''${barcode_report}''')    os
             Log To Console With Timestamp    ${barcode_filename}
             ${destination_path_payment_BarcodeList} =     Set Variable    ${primary_config['PathArchives_Final']}${/}LogReports\\${date}\${barcode_filename}
-            # Step 57
-            Run Keyword And Ignore Error    Copy File    ${barcode_report}    ${destination_path_payment_BarcodeList}  # not moving For now    
+            Run Keyword And Ignore Error    Copy File    ${barcode_report}    ${destination_path_payment_BarcodeList}
         END
-        # Maling each HTM file genrated Report
         Send Email Final Report    ${log_path}
-        # Step 60 Log file moving
         ${destination_path_payment_SettlementList} =     Set Variable    ${primary_config['PathArchives_Final']}${/}LogReports\\${date}\\${primary_config['FileName_ReportPaymentSettlementList']}${date}.csv
-        # Step 60
-        Run Keyword And Ignore Error   Copy File    ${log_path}    ${destination_path_payment_SettlementList}  # not moving For now
+        Run Keyword And Ignore Error   Copy File    ${log_path}    ${destination_path_payment_SettlementList}
     END
 
 Moving Cover Page Template
@@ -56,7 +63,6 @@ Moving Cover Page Template
     ${target_path}=    Join Path    ${primary_config['PathTemp']}    CoverPageTemplate.xlsx
     Copy File    ${Copy_cover_page}    ${target_path}            
     Log To Console    File moved to: ${target_path}
- 
 
 Initialize SAP System PP5
     [Documentation]    Kills existing SAP processes and launches SAP Logon
@@ -146,16 +152,37 @@ Download All HTML Files PP5
     @{IDENTIFICATIONS}=    Split String    ${IDENT_STRING}    |
     FOR    ${identification}    IN    @{IDENTIFICATIONS}
         Log To Console With Timestamp     ${identification}
-        ${HTML_FILE}=    Perform HTML Extraction    ${today_date}    ${identification}
-        ${exists}=    Run Keyword And Return Status
-        ...    File Should Exist    ${HTML_FILE}
-        IF    ${exists}
-            Append To List    ${FILES}    ${HTML_FILE}
-            Log To Console With Timestamp     Downloaded ${HTML_FILE}
+        ${status}    ${err_msg}=    Run Keyword And Ignore Error
+        ...    Perform HTML Extraction    ${today_date}    ${identification}
+
+        IF    '${status}' == 'PASS'
+            ${HTML_FILE}=    Set Variable    ${err_msg}
+
+            IF    '${HTML_FILE}' == 'None' or '${HTML_FILE}' == '${EMPTY}'
+                # Business exception — no data, payment list disabled, auth error
+                Log To Console With Timestamp    No data for ${identification}
+                PP5 Increment Technically Checked
+                PP5 Increment Log Transactions
+            ELSE
+                ${file_exists}=    Run Keyword And Return Status
+                ...    File Should Exist    ${HTML_FILE}
+                IF    ${file_exists}
+                    # Success — file downloaded
+                    Append To List    ${FILES}    ${HTML_FILE}
+                    Log To Console With Timestamp     Downloaded ${HTML_FILE}
+                    PP5 Increment Done And Technically Checked
+                    PP5 Increment Log Transactions
+                ELSE
+                    # Business exception — extraction ran but file missing
+                    Log To Console With Timestamp    File not found after extraction: ${HTML_FILE}
+                    PP5 Increment Technically Checked
+                    PP5 Increment Log Transactions
+                END
+            END
         ELSE
-            Log To Console With Timestamp     No data for ${identification}
+            Log To Console With Timestamp    System exception for ${identification}: ${err_msg}
         END
-        Log To Console With Timestamp      HEre for loop empty currently
+        Log To Console With Timestamp    Here for loop completed for ${identification}
     END
 
 Perform HTML Extraction
@@ -578,3 +605,23 @@ Check Payment List Status
     ...    Element Should Be Present    ${payment_list_locator}
 
     RETURN    ${status}
+
+PP5 Increment Log Transactions
+    ${lib}=    Get Library Instance    RobotProcessLibrary
+    ${new_tx}=    Evaluate    int($lib.config.Log_Transactions) + 1
+    Evaluate    setattr($lib.config, 'Log_Transactions', str(${new_tx}))
+    Log To Console    PP5 Log_Transactions: ${new_tx}
+
+PP5 Increment Done And Technically Checked
+    ${lib}=    Get Library Instance    RobotProcessLibrary
+    ${new_done}=    Evaluate    int($lib.config.Log_Done) + 1
+    ${new_loop}=    Evaluate    int($lib.config.Log_Looping) + 1
+    Evaluate    setattr($lib.config, 'Log_Done', str(${new_done}))
+    Evaluate    setattr($lib.config, 'Log_Looping', str(${new_loop}))
+    Log To Console    PP5 Completed: ${new_done} | TechnicallyChecked: ${new_loop}
+
+PP5 Increment Technically Checked
+    ${lib}=    Get Library Instance    RobotProcessLibrary
+    ${new_loop}=    Evaluate    int($lib.config.Log_Looping) + 1
+    Evaluate    setattr($lib.config, 'Log_Looping', str(${new_loop}))
+    Log To Console    PP5 TechnicallyChecked (business exception): ${new_loop}
