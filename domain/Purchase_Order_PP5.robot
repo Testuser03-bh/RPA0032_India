@@ -31,7 +31,6 @@ Main Workflow RPA0032 PP5
     FOR    ${file}    IN    @{DOWNLOADED_HTML_FILES}
         Log To Console With Timestamp     PP5- Total Files:- ${file}
     END
-    Append to list   ${DOWNLOADED_HTML_FILES}     %{USERPROFILE}\\Downloads\\Payment List_VHVA1.htm
     FOR    ${HTML_FILE}    IN    @{DOWNLOADED_HTML_FILES}
         ${log_path}    ${barcode_report}=    Process HTML File    ${HTML_FILE}
         ${date}=    Evaluate    __import__('datetime').datetime.now().strftime('%Y_%m_%d')
@@ -40,11 +39,11 @@ Main Workflow RPA0032 PP5
             ${barcode_filename}=    Evaluate    os.path.basename(r'''${barcode_report}''')    os
             Log To Console With Timestamp    ${barcode_filename}
             ${destination_path_payment_BarcodeList} =     Set Variable    ${primary_config['PathArchives_Final']}${/}LogReports\\${date}\${barcode_filename}
-            # Steo 57
+            # Step 57
             Run Keyword And Ignore Error    Copy File    ${barcode_report}    ${destination_path_payment_BarcodeList}  # not moving For now    
         END
         # Maling each HTM file genrated Report
-        # Send Email Final Report    ${log_path}
+        Send Email Final Report    ${log_path}
         # Step 60 Log file moving
         ${destination_path_payment_SettlementList} =     Set Variable    ${primary_config['PathArchives_Final']}${/}LogReports\\${date}\\${primary_config['FileName_ReportPaymentSettlementList']}${date}.csv
         # Step 60
@@ -273,8 +272,7 @@ Process HTML File
     FOR    ${vendor}    IN    @{vendor_outer} 
         Log To Console With Timestamp     HEre Vendor Data is This :- ${vendor}
         Log To Console With Timestamp     ------------------------------
-        # FOR    ${barcode}    IN    @{vendor['barcodes']}
-        FOR    ${barcode}    IN    5100537160    5100537170     5100537159
+        FOR    ${barcode}    IN    @{vendor['barcodes']}
             Log To Console With Timestamp     Processing Barcode :- ${barcode} in Vendor Name:- ${vendor['beneficiary_name']}
             Log    Processing barcode ${barcode}
             ${pdf_generate}=    Process for Barcode    ${barcode}    ${KZ_FOLDER_PATH}
@@ -493,12 +491,10 @@ Execute Barcode Upload Via Offset Search
 
     Log To Console With Timestamp     After clicking IMg Barcode copy from file 
     Wait Until Keyword Succeeds    20s     2s    Element Should Be Present     wnd[2]/usr/ctxtDY_PATH
-    Input Text    wnd[2]/usr/ctxtDY_PATH      ${EXECDIR}
-    # Input Text    wnd[2]/usr/ctxtDY_PATH    ${barcode_file_path}
+    Input Text    wnd[2]/usr/ctxtDY_PATH    ${barcode_file_path}
     Input Text     wnd[2]/usr/ctxtDY_FILENAME    BarcodeList.txt
     Click Element     wnd[2]/tbar[0]/btn[0]
     Wait Until Keyword Succeeds    20s    2s    Element should Be Present    wnd[1]/tbar[0]/btn[8]
-    # Log To Console With Timestamp       Here after f8 before invoice
     Click Element    wnd[1]/tbar[0]/btn[8]
     Wait for Element    ${IMG_INVOICE}    10
     RPA.Desktop.Click    ${IMG_INVOICE}

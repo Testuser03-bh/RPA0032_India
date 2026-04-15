@@ -343,7 +343,7 @@ def extract_data(File , PATH_ARCHIVES , PREFIX):
         create_folder(kz_folder)
 
         # step 31 
-        cover_page_path = create_cover_page('C:/TEMP/RPA0032_India' , vendor, data)
+        cover_page_path = create_cover_page(PATH_ARCHIVES , vendor, data)
         return  kz_folder , cover_page_path
 
 def close_edge_pdf_windows():

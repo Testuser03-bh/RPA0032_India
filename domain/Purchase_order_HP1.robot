@@ -147,14 +147,12 @@ Perform HTML Extraction HP1
     Set Focus     wnd[1]/tbar[0]/btn[0]
     Click Element   wnd[1]/tbar[0]/btn[0]
     Sleep      2s
-    # ${Auth_error_Status}=     Run Keyword And Return Status     Wait For Element      wnd[1]/usr/txtMESSTXT1      10
     ${Auth_error_Status}=     Run Keyword And Return Status     Wait For Element      ${Information_image}      10
     Log To Console With Timestamp  message=${Auth_error_Status}
     IF  ${Auth_error_Status}
         Log To Console With Timestamp     Authentication Error in This Identification :- ${Identification}
         Set Focus     wnd[1]/tbar[0]/btn[0]
         Click Element   wnd[1]/tbar[0]/btn[0]
-        # ${Auth_error_Status}=    Run Keyword And Return Status   Wait For Element      wnd[1]/usr/txtMESSTXT1    10
         ${Auth_error_Status}=     Run Keyword And Return Status     Wait For Element      ${Information_image}      10
         IF  ${Auth_error_Status}
             Log To Console With Timestamp     Authentication Error in This Identification :- ${Identification}
