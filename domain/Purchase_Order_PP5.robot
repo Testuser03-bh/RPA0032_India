@@ -418,7 +418,7 @@ PDF Export Approach
     Monitor Windows    ${latest_pdf}    10    1    True
     ${destination}=    Set Variable    ${KZ_FOLDER}\\${BARCODE}_${Pdf_number}.pdf
     Log To Console With Timestamp     Moving ${pdf_path} -> ${destination}
-    Copy File    ${pdf_path}    ${SAP_TMP}
+    # Copy File    ${pdf_path}    ${SAP_TMP}
     Log To Console With Timestamp      Here before Move Pdf to SAP
     # Move Pdf From Env    ${pdf_path}    ${SAP_TMP}
     # ${pdf_path}=    Set Variable    ${SAP_TMP}\\${latest_pdf}
