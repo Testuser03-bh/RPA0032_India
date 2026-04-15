@@ -308,9 +308,15 @@ Process HTML File
             ${record_barcode_list}=      Create List    ${barcode}    ${barcode}.pdf    ${pdf_file}    ${status}
             Append To List    ${BARCODE_RECORDS}    ${record_barcode_list}
             # Clear filters (same as your code)
-            Wait For Element      ${Clear_filter}   10
+            Wait For Element      ${Clear_filter}   15
             RPA.Desktop.Click     ${Clear_filter}
-            Wait for element      ${Delete_filter}   5
+            ${Delete_filter_not_found}=     Run Keyword And Return Status    Wait for element      ${Delete_filter}   10
+            IF   not ${Delete_filter_not_found} 
+                Wait For Element      ${Clear_filter}   15
+                RPA.Desktop.Click     ${Clear_filter}
+                Wait for element      ${Delete_filter}   10
+                RPA.Desktop.Click     ${Delete_filter}
+            END
             RPA.Desktop.Click     ${Delete_filter}
         END
     END
@@ -398,7 +404,7 @@ PDF Export Approach
     ${SAP_TMP}=    Set Variable    ${primary_config["TempSAPGUIFolder"]}
     # Create Directory    ${SAP_TMP}
     Log To Console With Timestamp      Here :- ${SAP_TMP}
-    ${TEMP_PATH}=    Set Variable     C:\\Users\\%{USERNAME}\\AppData\\Local\\SAP\\SAP GUI\\tmp\\
+    ${TEMP_PATH}=    Set Variable     C:\\Users\\%{USERNAME}\\AppData\\Local\\SAP\\SAP${Space}GUI\\tmp\\
     # Get folders with absolute paths
     @{folders}=    List Directories In Directory    ${TEMP_PATH}    absolute=True
     # Find latest created folder
