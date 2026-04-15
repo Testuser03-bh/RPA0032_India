@@ -7,7 +7,7 @@ Library          ..${/}adapters${/}Python_helper.py
 Library          ..${/}adapters${/}db_adapter.py
 Library            ..${/}adapters${/}Library${/}InitAllSettingsSQL.py
 Resource     ..${/}Resources${/}locators.robot
-Library          ../adapters/Library/RobotProcessLibrary.py
+
 *** Variables ***
 @{DOWNLOADED_HTML_FILES}
 *** Keywords ***
