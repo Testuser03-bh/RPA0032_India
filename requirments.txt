@@ -1,0 +1,30 @@
+rpaframework-recognition
+# Core RPA framework
+rpaframework>=31.2,<32
+rpaframework-recognition>=5.2
+ 
+# Robot Framework libraries you use
+robotframework-sapguilibrary>=1.1
+robotframework-seleniumlibrary>=6.8
+robotframework-requests>=0.9
+ 
+# Database
+pyodbc>=5.3
+ 
+# Security patched libraries (CVE fixes)
+pillow>=12.1.1,<13
+pypdf>=6.9.2
+pdfminer.six>=20251230
+ 
+# Optional utilities commonly used in RPA
+openpyxl>=3.1
+python-docx>=0.8.11
+pytesseract>=0.3.13
+opencv-python-headless>=4.8,<5
+ 
+# Networking
+requests>=2.32
+setuptools>=78.1.1
+PyAutoGUI==0.9.54
+pyodbc
+pypdf2
